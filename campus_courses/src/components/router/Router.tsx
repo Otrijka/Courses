@@ -14,7 +14,7 @@ import GreetingPage from '../pages/greetingPage/GreetingPage'
 //import { RegistrationPage } from '../pages/registrationPage/RegistrationPage'
 //import { TeachingCoursesPage } from '../pages/teachingCoursesPage/TeachingCoursesPage'
 
-const LoginPage = lazy(() => import('../pages/loginPage/LoginPage'))
+const LoginPage = lazy(() => import('../../pages/loginPage/LoginPage'))
 const CourseDetailsPage = lazy(() => import('../pages/courseDetailsPage/CourseDetailsPage'))
 // const GreetingPage = lazy(() => import('../pages/greetingPage/GreetingPage'))
 const GroupCoursesPage = lazy(() => import('../pages/groupCoursesPage/GroupCoursesPage'))

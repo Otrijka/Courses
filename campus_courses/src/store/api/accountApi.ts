@@ -1,4 +1,4 @@
-import { IUserLogin } from '../../components/pages/loginPage/LoginForm'
+import { IUserLogin } from '../../pages/loginPage/api/loginApi'
 import { IEditUserProfile, IUserRegistration } from '../../types/request.types'
 import { IProfileResponse, IRolesResponse, ITokenResponse } from '../../types/response.types'
 import { api } from './api'

@@ -4,14 +4,10 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { RegularsHelper } from '../../../helpers/RegularsHelper'
 import { useToastMutate } from '../../../hooks/useToastMutate'
+import { IUserLogin } from '../../../pages/loginPage/api/loginApi'
 import { useLoginUserMutation } from '../../../store/api/accountApi'
 import { ButtonCustom } from '../../shared/ButtonCustom'
 import { ErrorMessage } from '../../shared/ErrorMessage'
-
-export interface IUserLogin {
-	email: string
-	password: string
-}
 
 export function LoginForm() {
 	const nav = useNavigate()

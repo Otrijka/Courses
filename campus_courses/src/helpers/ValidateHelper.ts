@@ -13,6 +13,13 @@ const ValidateMessages = {
 }
 
 export const ValidateHelper: { [key: string]: ValidateFunction } = {
+	required: value => {
+		if (!value.length) {
+			return ValidateMessages.required
+		}
+		return true
+	},
+
 	birthDate: date => {
 		if (!date?.length) {
 			return ValidateMessages.required
