@@ -9,19 +9,13 @@ interface IInfoTabsCourseDetailsProps {
 }
 
 export function InfoTabsCourseDetails(props: IInfoTabsCourseDetailsProps) {
-	const { course, userCourseRole } = useTypedSelector(
-		state => state.openedCourse
-	)
+	const { course, userCourseRole } = useTypedSelector(state => state.openedCourse)
 	const { isShow, onHide, onShow } = useModal()
 	return (
 		<>
 			<CreateNotificationModal isShow={isShow} onHide={onHide} />
-			<Tabs className={props.className} defaultActiveKey={'requirements'}>
-				<Tab
-					className={'border'}
-					title={'Требования к курсу'}
-					eventKey={'requirements'}
-				>
+			<Tabs fill className={props.className} defaultActiveKey={'requirements'}>
+				<Tab className={'border'} title={'Требования к курсу'} eventKey={'requirements'}>
 					{course?.requirements && (
 						<div className={'mt-3 mb-3 ms-3'}>
 							<div dangerouslySetInnerHTML={{ __html: course.requirements }} />
@@ -44,20 +38,13 @@ export function InfoTabsCourseDetails(props: IInfoTabsCourseDetailsProps) {
 							<div>
 								Уведомления
 								<span className={'ms-1 badge rounded-pill bg-danger'}>
-									{course.notifications.length > 3
-										? '3+'
-										: course.notifications.length}
+									{course.notifications.length > 3 ? '3+' : course.notifications.length}
 								</span>
 							</div>
 						)
 					}
-					eventKey={'notifications'}
-				>
-					{[
-						UserCourseRole.Admin,
-						UserCourseRole.MainTeacher,
-						UserCourseRole.Teacher,
-					].includes(userCourseRole!) && (
+					eventKey={'notifications'}>
+					{[UserCourseRole.Admin, UserCourseRole.MainTeacher, UserCourseRole.Teacher].includes(userCourseRole!) && (
 						<Button size={'sm'} className={'mt-3 ms-3 mb-3'} onClick={onShow}>
 							СОЗДАТЬ УВЕДОМЛЕНИЕ
 						</Button>
@@ -73,8 +60,7 @@ export function InfoTabsCourseDetails(props: IInfoTabsCourseDetailsProps) {
 										notify.isImportant
 											? 'bg-danger-subtle text-danger rounded-0 border-0 border-bottom border-secondary'
 											: 'border-bottom-2 rounded-0'
-									}
-								>
+									}>
 									{notify.text}
 								</ListGroupItem>
 							))}

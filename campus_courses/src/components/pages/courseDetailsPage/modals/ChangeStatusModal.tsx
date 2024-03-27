@@ -1,16 +1,9 @@
-import { FormEvent, useState } from 'react'
-import {
-	Button,
-	Form,
-	FormCheck,
-	Modal,
-	ModalBody,
-	ModalFooter,
-	ModalHeader,
-} from 'react-bootstrap'
+import { Button, Form, FormCheck, Modal, ModalBody, ModalFooter, ModalHeader } from 'react-bootstrap'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { useToastMutate } from '../../../../hooks/useToastMutate'
 import { useTypedSelector } from '../../../../hooks/useTypedSelector'
 import { useEditCourseStatusMutation } from '../../../../store/api/coursesApi'
-import { CourseStatus } from '../../../../types/response.types'
+import { ICourseEditStatus } from '../../../../types/request.types'
 
 interface IChangeStatusModalProps {
 	isShow: boolean
@@ -18,69 +11,72 @@ interface IChangeStatusModalProps {
 }
 
 export function ChangeStatusModal(props: IChangeStatusModalProps) {
+	const [editStatus, { isSuccess, isError }] = useEditCourseStatusMutation()
 	const { status, id } = useTypedSelector(state => state.openedCourse.course!)
-	const [editStatus] = useEditCourseStatusMutation()
-	const [newStatus, setNewStatus] = useState<
-		'Started' | 'OpenForAssigning' | 'Created' | 'Finished'
-	>(status)
-	const handleChangeStatus = (e: FormEvent<HTMLFormElement>) => {
-		e.preventDefault()
-		editStatus({ courseId: id, status: newStatus })
+
+	const onChangeCourseStatus: SubmitHandler<ICourseEditStatus> = data => {
+		editStatus(data)
+		props.onHide()
+	}
+
+	const { register, handleSubmit, reset } = useForm<ICourseEditStatus>({
+		defaultValues: {
+			courseId: id,
+		},
+	})
+
+	useToastMutate(isSuccess, isError, 'Статус изменён')
+
+	const onModalHide = () => {
+		reset()
 		props.onHide()
 	}
 
 	return (
-		<Modal
-			show={props.isShow}
-			onHide={() => {
-				props.onHide()
-				setNewStatus(status)
-			}}
-			size={'lg'}
-		>
+		<Modal show={props.isShow} onHide={onModalHide} size={'lg'}>
 			<ModalHeader closeButton>Изменение статуса курса</ModalHeader>
 			<ModalBody>
-				<Form
-					onSubmit={handleChangeStatus}
-					className={'d-flex gap-3'}
-					id={'formChangeStatus'}
-				>
+				<Form onSubmit={handleSubmit(onChangeCourseStatus)} className={'d-flex gap-3'} id={'formChangeStatus'}>
 					<FormCheck
-						onChange={() => setNewStatus(CourseStatus.Created)}
+						{...register('status')}
 						name={'status'}
-						checked={newStatus === 'Created'}
+						value={'Created'}
 						type={'radio'}
 						label={'Создан'}
 						disabled={status !== 'Created'}
+						id={'status_1'}
 					/>
 					<FormCheck
-						onChange={() => setNewStatus(CourseStatus.OpenForAssigning)}
-						checked={newStatus === 'OpenForAssigning'}
+						{...register('status')}
+						value={'OpenForAssigning'}
 						name={'status'}
 						type={'radio'}
 						label={'Открыт для записи'}
 						disabled={status === 'Started' || status === 'Finished'}
+						id={'status_2'}
 					/>
 					<FormCheck
-						onChange={() => setNewStatus(CourseStatus.Started)}
+						{...register('status')}
 						name={'status'}
-						checked={newStatus === 'Started'}
+						value={'Started'}
 						type={'radio'}
 						label={'В процессе'}
 						disabled={status === 'Finished'}
+						id={'status_3'}
 					/>
 					<FormCheck
-						onChange={() => setNewStatus(CourseStatus.Finished)}
+						{...register('status')}
 						name={'status'}
-						checked={newStatus === 'Finished'}
+						value={'Finished'}
 						type={'radio'}
 						label={'Завершен'}
 						disabled={status === 'Finished'}
+						id={'status_4'}
 					/>
 				</Form>
 			</ModalBody>
 			<ModalFooter>
-				<Button className={'btn-secondary'} onClick={props.onHide}>
+				<Button className={'btn-secondary'} onClick={onModalHide}>
 					Отмена
 				</Button>
 				<Button type={'submit'} form={'formChangeStatus'}>

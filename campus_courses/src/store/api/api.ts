@@ -6,14 +6,6 @@ export const api = createApi({
 		baseUrl: 'https://camp-courses.api.kreosoft.space/',
 	}),
 	endpoints: () => ({}),
-	keepUnusedDataFor: 0,
-	tagTypes: [
-		'userProfile',
-		'userRoles',
-		'coursesMy',
-		'coursesTeaching',
-		'groupCourses',
-		'groups',
-		'courseDetails',
-	],
+	//keepUnusedDataFor: 0,
+	tagTypes: ['userProfile', 'userRoles', 'groupCourses', 'groups', 'courseDetails'],
 })

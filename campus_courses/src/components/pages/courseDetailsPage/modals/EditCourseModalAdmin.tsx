@@ -1,19 +1,16 @@
-import { FormEvent } from 'react'
-import {
-	Button,
-	Form,
-	FormCheck,
-	FormControl,
-	FormLabel,
-	FormSelect,
-	Modal,
-} from 'react-bootstrap'
-import { DateHelper } from '../../../../helpers/DateHelper'
-import { useInput } from '../../../../hooks/useInput'
+import { useEffect } from 'react'
+import { Button, Form, FormCheck, FormLabel, FormSelect, Modal } from 'react-bootstrap'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { ValidateHelper } from '../../../../helpers/ValidateHelper'
+import { useToastMutate } from '../../../../hooks/useToastMutate'
 import { useTypedSelector } from '../../../../hooks/useTypedSelector'
+import { useEditCourseAdminMutation } from '../../../../store/api/coursesApi'
 import { useGetUsersQuery } from '../../../../store/api/usersApi'
 import { CourseCreateType } from '../../../../types/request.types'
-import { TextEditToolbar } from '../../groupCoursesPage/TextEditToolbar'
+import { ButtonCustom } from '../../../shared/ButtonCustom'
+import { ErrorMessage } from '../../../shared/ErrorMessage'
+import { InputCustom } from '../../../shared/InputCustom'
+import { TextEditToolbar } from '../../../shared/TextEditToolbar'
 
 interface IEditCourseModalProps {
 	isShow: boolean
@@ -23,104 +20,119 @@ interface IEditCourseModalProps {
 export function EditCourseModalAdmin(props: IEditCourseModalProps) {
 	const course = useTypedSelector(state => state.openedCourse.course)
 	const { data: users } = useGetUsersQuery('')
-	const { data, handleOnChange } = useInput<CourseCreateType>({
-		name: course?.name!,
-		startYear: course?.startYear!,
-		semester: course?.semester!,
-		annotations: course?.annotations!,
-		requirements: course?.requirements!,
-		mainTeacherId: '',
-		maximumStudentsCount: course?.maximumStudentsCount!,
+	const [editCourse, { isLoading, isSuccess, isError }] = useEditCourseAdminMutation()
+
+	const {
+		register,
+		clearErrors,
+		control,
+		setValue,
+		formState: { errors },
+		handleSubmit,
+	} = useForm<CourseCreateType>({
+		mode: 'onChange',
 	})
 
-	const handleEditCourse = (e: FormEvent<HTMLFormElement>) => {
-		e.preventDefault()
-		props.onHide()
+	useEffect(() => {
+		if (!isLoading) {
+			props.onHide()
+		}
+	}, [isLoading])
+
+	useToastMutate(isSuccess, isError, 'Курс изменён')
+
+	useEffect(() => {
+		clearErrors()
+		register('annotations', { required: 'Обязательное поле' })
+		register('requirements', { required: 'Обязательное поле' })
+		if (props.isShow) {
+			setValue('name', course?.name!)
+			setValue('startYear', course?.startYear!)
+			setValue('maximumStudentsCount', course?.maximumStudentsCount!)
+			setValue('mainTeacherId', '')
+			setValue('semester', course?.semester!)
+			setValue('annotations', course?.annotations!)
+			setValue('requirements', course?.requirements!)
+		}
+	}, [props.isShow])
+
+	const onEditCourseByAdmin: SubmitHandler<CourseCreateType> = data => {
+		editCourse({ courseId: course?.id!, body: data })
 	}
+
 	return (
 		<Modal size='lg' show={props.isShow} onHide={props.onHide}>
 			<Modal.Header closeButton>Редактировать курс</Modal.Header>
 			<Modal.Body>
-				<Form onSubmit={handleEditCourse} id='editCourseTeacherForm'>
-					<FormLabel>Название курса</FormLabel>
-					<FormControl
-						value={data.name}
-						onChange={e => handleOnChange('name', e.target.value)}
+				<Form onSubmit={handleSubmit(onEditCourseByAdmin)} id='editCourseTeacherForm'>
+					<InputCustom
+						name='name'
+						label={'Название курса'}
+						register={register}
+						validateFn={ValidateHelper.courseName}
+						messageError={errors?.name?.message}
 					/>
-					<FormLabel className={'mt-3'}>Год начала курса</FormLabel>
-					<FormControl
-						type={'number'}
-						min={DateHelper.get_current_year()}
-						value={data.startYear}
-						onChange={e =>
-							handleOnChange(
-								'startYear',
-								e.target.value,
-								e.target.value.length <= 4
-							)
-						}
+					<InputCustom
+						name='startYear'
+						label={'Год начала курса'}
+						labelClassName='mt-3'
+						register={register}
+						validateFn={ValidateHelper.courseStartYear}
+						messageError={errors?.startYear?.message}
+						type='number'
 					/>
-					<FormLabel className={'mt-3'}>Общее количество мест</FormLabel>
-					<FormControl
-						type={'number'}
-						min={1}
-						value={data.maximumStudentsCount}
-						onChange={e =>
-							handleOnChange(
-								'maximumStudentsCount',
-								e.target.value,
-								e.target.value.length <= 4 && e.target.value[0] !== '0'
-							)
-						}
+					<InputCustom
+						name='maximumStudentsCount'
+						label={'Общее количество мест'}
+						labelClassName='mt-3'
+						register={register}
+						validateFn={ValidateHelper.courseMaximumStudentsCount}
+						messageError={errors?.maximumStudentsCount?.message}
+						type='number'
 					/>
 					<FormLabel className={'mt-3'}>Семестр</FormLabel>
 					<div className={'d-flex gap-3'}>
 						<FormCheck
+							{...register('semester')}
 							name={'semester'}
 							type={'radio'}
+							value={'Autumn'}
 							label={'Осенний'}
-							checked={data.semester === 'Autumn'}
-							onChange={() => handleOnChange('semester', 'Autumn')}
+							id='semester_1'
 						/>
 						<FormCheck
+							{...register('semester')}
 							name={'semester'}
 							type={'radio'}
+							value={'Spring'}
 							label={'Весенний'}
-							checked={data.semester === 'Spring'}
-							onChange={() => handleOnChange('semester', 'Spring')}
+							id='semester_2'
 						/>
 					</div>
 					<FormLabel className={'mt-3'}>Требования</FormLabel>
-					<TextEditToolbar
-						value={data.requirements}
-						handleChange={(value: string) =>
-							handleOnChange('requirements', value)
-						}
-					/>
+					<TextEditToolbar name='requirements' control={control} />
+					{errors.requirements && <ErrorMessage text={errors.requirements.message} />}
 					<FormLabel className={'mt-3'}>Аннотации</FormLabel>
-					<TextEditToolbar
-						value={data.annotations}
-						handleChange={(value: string) =>
-							handleOnChange('annotations', value)
-						}
-					/>
+					<TextEditToolbar name='annotations' control={control} />
+
+					{errors.annotations && <ErrorMessage text={errors.annotations.message} />}
 					<FormLabel className={'mt-3'}>Основной преподаватель курса</FormLabel>
-					<FormSelect
-						onChange={e => handleOnChange('mainTeacherId', e.target.value)}
-					>
+					<FormSelect {...register('mainTeacherId', { required: 'Обязательное поле' })}>
+						<option value=''>Не выбрано</option>
 						{users?.map(user => (
 							<option key={user.id} value={user.id}>
 								{user.fullName}
 							</option>
 						))}
 					</FormSelect>
+					{errors.mainTeacherId && <ErrorMessage text={errors.mainTeacherId.message} />}
 				</Form>
 			</Modal.Body>
 			<Modal.Footer>
-				<Button className='btn-secondary'>Отмена</Button>
-				<Button type='submit' form='editCourseTeacherForm'>
-					Сохранить
+				<Button className='btn-secondary' onClick={props.onHide}>
+					Отмена
 				</Button>
+				<ButtonCustom type='submit' text='Сохранить' form='editCourseTeacherForm' isLoading={isLoading} />
 			</Modal.Footer>
 		</Modal>
 	)

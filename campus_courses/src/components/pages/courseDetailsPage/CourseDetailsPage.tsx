@@ -15,20 +15,12 @@ export default function CourseDetailsPage() {
 	const dispatch = useDispatch<AppDispatch>()
 	const user = useTypedSelector(state => state.auth.user)
 	const { id: courseId } = useParams<{ id: string }>()
-	const {
-		data: courseDetails,
-		isLoading,
-		error,
-	} = useGetCourseDetailsQuery({ id: courseId })
+	const { data: courseDetails, isLoading, error } = useGetCourseDetailsQuery({ id: courseId })
 
 	useEffect(() => {
 		if (courseDetails) {
-			const isTeacher = courseDetails.teachers.find(
-				t => t.email === user?.email
-			)
-			const isStudent = courseDetails.students.find(
-				s => s.email === user?.email
-			)
+			const isTeacher = courseDetails.teachers.find(t => t.email === user?.email)
+			const isStudent = courseDetails.students.find(s => s.email === user?.email)
 
 			let role: UserCourseRole = UserCourseRole.Student
 			if (!user?.roles.isTeacher && !user?.roles.isStudent) {
@@ -68,11 +60,7 @@ export default function CourseDetailsPage() {
 		return <Loader />
 	}
 	if (error) {
-		return (
-			<Container className={'text-center text-danger'}>
-				Такого курса не существует
-			</Container>
-		)
+		return <Container className={'text-center text-danger'}>Такого курса не существует</Container>
 	}
 
 	if (courseDetails) {

@@ -1,35 +1,71 @@
-import {Button, Form, Modal} from "react-bootstrap";
-import {useEffect, useState} from "react";
-import {groupsApi, useCreateGroupMutation, useEditGroupMutation} from "../../../store/api/groupsApi";
+import { useEffect } from 'react'
+import { Button, Form, Modal } from 'react-bootstrap'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { ValidateHelper } from '../../../helpers/ValidateHelper'
+import { useToastMutate } from '../../../hooks/useToastMutate'
+import { useCreateGroupMutation } from '../../../store/api/groupsApi'
+import { ButtonCustom } from '../../shared/ButtonCustom'
+import { InputCustom } from '../../shared/InputCustom'
 
-interface CreateGroupItemModalProps {
-    isShow: boolean,
-    onHide: () => void,
+interface ICreateGroup {
+	name: string
 }
 
-export function CreateGroupItemModal(props : CreateGroupItemModalProps) {
+interface CreateGroupItemModalProps {
+	isShow: boolean
+	onHide: () => void
+}
 
-    const [groupName, setGroupName] = useState("")
-    const [createGroup] = useCreateGroupMutation()
+export function CreateGroupItemModal(props: CreateGroupItemModalProps) {
+	const [createGroup, { isLoading, isSuccess, isError }] = useCreateGroupMutation()
+	const {
+		register,
+		handleSubmit,
+		reset,
+		formState: { errors },
+	} = useForm<ICreateGroup>()
 
-    const handleCreate = () => {
-        createGroup({name: groupName})
-        props.onHide()
-        setGroupName("")
-    }
-    return (
-        <Modal show={props.isShow} onHide={props.onHide} size={'lg'}>
-            <Modal.Header closeButton>
-                <Modal.Title>Создание группы</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <Form.Label>Название новой группы</Form.Label>
-                <Form.Control type={'text'} value={groupName} onChange={(e) => setGroupName(e.target.value)}/>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button className={'btn-secondary'} onClick={props.onHide}>Отмена</Button>
-                <Button onClick={handleCreate}>Создать</Button>
-            </Modal.Footer>
-        </Modal>
-    )
+	useToastMutate(isSuccess, isError, 'Группа создана')
+
+	const onCreateGroup: SubmitHandler<ICreateGroup> = data => {
+		createGroup(data)
+	}
+
+	const onHideModal = () => {
+		if (!isLoading) {
+			props.onHide()
+			reset()
+		}
+	}
+
+	useEffect(() => {
+		if (isLoading === false) {
+			onHideModal()
+		}
+	}, [isLoading])
+
+	return (
+		<Modal show={props.isShow} onHide={onHideModal} size={'lg'}>
+			<Modal.Header closeButton>
+				<Modal.Title>Создание группы</Modal.Title>
+			</Modal.Header>
+			<Modal.Body>
+				<Form onSubmit={handleSubmit(onCreateGroup)} id='createGroupForm'>
+					<InputCustom
+						label={'Название новой группы'}
+						name={'name'}
+						register={register}
+						validateFn={ValidateHelper.required}
+						messageError={errors.name?.message}
+					/>
+				</Form>
+			</Modal.Body>
+			<Modal.Footer>
+				<Button className={'btn-secondary'} onClick={onHideModal}>
+					Отмена
+				</Button>
+				<ButtonCustom text='Создать' type='submit' isLoading={isLoading} form='createGroupForm' />
+			</Modal.Footer>
+		</Modal>
+	)
 }

@@ -1,35 +1,33 @@
 import { ReactNode, useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
-import {
-	useGetUserProfileQuery,
-	useGetUserRolesQuery,
-} from '../../store/api/accountApi'
+import { Navigate } from 'react-router-dom'
+import { useGetUserProfileQuery, useGetUserRolesQuery } from '../../store/api/accountApi'
 import { setAuth, setUser } from '../../store/slices/auth.slice'
 import { AppDispatch } from '../../store/store'
 import { Header } from './header/Header'
+import { Loader } from './loader/Loader'
 
 export interface ILayoutProps {
 	children: ReactNode
 }
 
 export function PrivateLayout({ children }: ILayoutProps) {
-	const navigation = useNavigate()
 	const dispatch = useDispatch<AppDispatch>()
 	const {
 		data: profile,
 		isLoading: isLoadingProfile,
 		error: profileError,
+		refetch: refetchProfile,
 	} = useGetUserProfileQuery('')
-	const {
-		data: roles,
-		isLoading: isLoadingRoles,
-		error: rolesError,
-	} = useGetUserRolesQuery('')
+	const { data: roles, isLoading: isLoadingRoles, error: rolesError, refetch: refetchRoles } = useGetUserRolesQuery('')
+
+	useEffect(() => {
+		refetchProfile()
+		refetchRoles()
+	}, [children])
 
 	useEffect(() => {
 		if (!isLoadingProfile && !isLoadingRoles && profile && roles) {
-			console.log('Вставка человека')
 			dispatch(setAuth(true))
 			dispatch(
 				setUser({
@@ -38,22 +36,24 @@ export function PrivateLayout({ children }: ILayoutProps) {
 				})
 			)
 		}
+	}, [profile, roles])
 
+	useEffect(() => {
 		if (profileError || rolesError) {
-			console.log('Ошибка фетча')
 			localStorage.removeItem('token')
-			navigation('/login')
+			dispatch(setAuth(false))
+			dispatch(setUser(null))
 		}
-	}, [profile, roles, profileError, rolesError])
+	}, [profileError, rolesError])
 
-	if (isLoadingProfile || isLoadingRoles) {
-		return <></>
+	if (profileError || rolesError) {
+		return <Navigate to={'/login'} replace />
 	}
 
 	return (
 		<>
 			<Header />
-			{children}
+			{isLoadingProfile || isLoadingRoles ? <Loader /> : <>{children}</>}
 		</>
 	)
 }

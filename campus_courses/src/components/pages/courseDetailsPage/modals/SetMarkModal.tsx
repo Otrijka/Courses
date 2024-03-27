@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react'
 import { Button, Form, FormCheck, FormLabel, Modal } from 'react-bootstrap'
+import { useToastMutate } from '../../../../hooks/useToastMutate'
 import { useTypedSelector } from '../../../../hooks/useTypedSelector'
 import { useSetMarkMutation } from '../../../../store/api/coursesApi'
 import { MarkTime, MarkType } from '../../../../types/request.types'
@@ -14,10 +15,12 @@ type SetMarkModalProps = {
 
 export function SetMarkModal(props: SetMarkModalProps) {
 	const courseId = useTypedSelector(state => state.openedCourse.course?.id)
-	const [setStudentMark] = useSetMarkMutation()
+	const [setStudentMark, { isSuccess, isError }] = useSetMarkMutation()
 	const [mark, setMark] = useState<MarkType | null>()
 
-	const handleSetMark = (e: FormEvent<HTMLFormElement>) => {
+	useToastMutate(isSuccess, isError, 'Оценка поставлена')
+
+	const onSetMark = (e: FormEvent<HTMLFormElement>) => {
 		e.preventDefault()
 		if (!mark) return
 		setStudentMark({
@@ -32,16 +35,13 @@ export function SetMarkModal(props: SetMarkModalProps) {
 	return (
 		<Modal show={props.isShow} onHide={props.onHide}>
 			<Modal.Header closeButton>
-				Изменение оценки для "
-				{props.markTime === 'Final'
-					? 'Финальная аттестация'
-					: 'Промежуточная аттестация'}
-				"
+				Изменение оценки для "{props.markTime === 'Final' ? 'Финальная аттестация' : 'Промежуточная аттестация'}"
 			</Modal.Header>
 			<Modal.Body>
-				<Form id='setMarkForm' onSubmit={handleSetMark}>
+				<Form id='setMarkForm' onSubmit={onSetMark}>
 					<FormLabel>Студент - {props.student && props.student.name}</FormLabel>
 					<FormCheck
+						id='mark_1'
 						name='mark'
 						type='radio'
 						label='Пройдено'
@@ -51,6 +51,7 @@ export function SetMarkModal(props: SetMarkModalProps) {
 						}}
 					/>
 					<FormCheck
+						id='mark_2'
 						name='mark'
 						type='radio'
 						label='Зафейлено'

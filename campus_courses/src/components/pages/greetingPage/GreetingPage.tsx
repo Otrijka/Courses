@@ -7,9 +7,7 @@ export default function GreetingPage() {
 	return (
 		<Container className={'text-center fw-light fs-1'}>
 			{user ? (
-				<span>
-					{user.fullName}, добро пожаловать в систему кампусных курсов
-				</span>
+				<span>{user.fullName}, добро пожаловать в систему кампусных курсов</span>
 			) : (
 				<span>Добро пожаловать в систему кампусных курсов</span>
 			)}

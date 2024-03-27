@@ -1,10 +1,6 @@
-import { IUserLogin } from '../../components/pages/loginPage/LoginPage'
+import { IUserLogin } from '../../components/pages/loginPage/LoginForm'
 import { IEditUserProfile, IUserRegistration } from '../../types/request.types'
-import {
-	IProfileResponse,
-	IRolesResponse,
-	ITokenResponse,
-} from '../../types/response.types'
+import { IProfileResponse, IRolesResponse, ITokenResponse } from '../../types/response.types'
 import { api } from './api'
 
 export const accountApi = api.injectEndpoints({
@@ -15,12 +11,7 @@ export const accountApi = api.injectEndpoints({
 				body: loginTerm,
 				method: 'POST',
 			}),
-			invalidatesTags: [
-				'userProfile',
-				'userRoles',
-				'coursesMy',
-				'coursesTeaching',
-			],
+			invalidatesTags: ['userProfile', 'userRoles', 'groupCourses'],
 		}),
 		registerUser: builder.mutation<ITokenResponse, IUserRegistration>({
 			query: (registerTerm: IUserRegistration) => ({
@@ -28,25 +19,15 @@ export const accountApi = api.injectEndpoints({
 				body: registerTerm,
 				method: 'POST',
 			}),
-			invalidatesTags: [
-				'userProfile',
-				'userRoles',
-				'coursesMy',
-				'coursesTeaching',
-			],
+			invalidatesTags: ['userProfile', 'userRoles', 'groupCourses'],
 		}),
-		logoutUser: builder.mutation<any, any>({
-			query: (token: string) => ({
+		logoutUser: builder.mutation({
+			query: () => ({
 				url: '/logout',
 				method: 'POST',
 				headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
 			}),
-			invalidatesTags: [
-				'userProfile',
-				'userRoles',
-				'coursesMy',
-				'coursesTeaching',
-			],
+			invalidatesTags: ['userProfile', 'userRoles', 'groupCourses'],
 		}),
 		editUserProfile: builder.mutation<any, IEditUserProfile>({
 			query: (data: IEditUserProfile) => ({
@@ -58,7 +39,7 @@ export const accountApi = api.injectEndpoints({
 			invalidatesTags: ['userProfile'],
 		}),
 		getUserProfile: builder.query<IProfileResponse, any>({
-			query: (token: string) => ({
+			query: () => ({
 				url: '/profile',
 				method: 'GET',
 				headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
@@ -66,7 +47,7 @@ export const accountApi = api.injectEndpoints({
 			providesTags: ['userProfile'],
 		}),
 		getUserRoles: builder.query<IRolesResponse, any>({
-			query: (token: string) => ({
+			query: () => ({
 				url: '/roles',
 				method: 'GET',
 				headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },

@@ -35,12 +35,16 @@ export interface ICourseEditStatus {
 	status: 'Started' | 'OpenForAssigning' | 'Created' | 'Finished'
 }
 
+export interface IDeleteCourse {
+	courseId: string
+}
+
 export interface ICourseNotificationCreate {
 	text: string
 	isImportant: boolean
 }
 
-export type EditCourseTeacherType = {
+export type EditCourseTeacher = {
 	requirements: string
 	annotations: string
 }

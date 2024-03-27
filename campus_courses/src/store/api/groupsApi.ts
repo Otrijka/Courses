@@ -40,9 +40,4 @@ export const groupsApi = api.injectEndpoints({
 	}),
 })
 
-export const {
-	useGetGroupsQuery,
-	useEditGroupMutation,
-	useDeleteGroupMutation,
-	useCreateGroupMutation,
-} = groupsApi
+export const { useGetGroupsQuery, useEditGroupMutation, useDeleteGroupMutation, useCreateGroupMutation } = groupsApi
